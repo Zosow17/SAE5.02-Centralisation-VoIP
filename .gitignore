@@ -1,0 +1,9 @@
+# Secrets
+*.key
+*.pem
+vault_password.txt
+.env
+
+# Python
+__pycache__/
+*.pyc
