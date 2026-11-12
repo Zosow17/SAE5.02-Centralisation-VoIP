@@ -1,0 +1,28 @@
+---
+- name: Créer le dossier de déploiement MariaDB
+  ansible.builtin.file:
+    path: /opt/sae502/database
+    state: directory
+    mode: "0755"
+
+- name: Générer le fichier Docker Compose MariaDB
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: /opt/sae502/database/docker-compose.yml
+    mode: "0600"
+
+- name: Démarrer MariaDB avec Docker Compose
+  ansible.builtin.command:
+    cmd: docker compose -f /opt/sae502/database/docker-compose.yml up -d
+  register: mariadb_compose
+  changed_when: >
+    'Created' in (mariadb_compose.stdout + mariadb_compose.stderr) or
+    'Started' in (mariadb_compose.stdout + mariadb_compose.stderr) or
+    'Recreated' in (mariadb_compose.stdout + mariadb_compose.stderr)
+
+- name: Vérifier que le conteneur MariaDB fonctionne
+  ansible.builtin.command:
+    cmd: docker ps --filter name={{ mariadb_container_name }} --filter status=running --quiet
+  register: mariadb_running
+  changed_when: false
+  failed_when: mariadb_running.stdout == ""

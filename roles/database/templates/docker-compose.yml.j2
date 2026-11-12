@@ -1,0 +1,24 @@
+services:
+  mariadb:
+    image: "{{ mariadb_image }}"
+    container_name: "{{ mariadb_container_name }}"
+    restart: unless-stopped
+
+    environment:
+      MARIADB_ROOT_PASSWORD: "{{ vault_mariadb_root_password }}"
+      MARIADB_DATABASE: "{{ mariadb_database }}"
+      MARIADB_USER: "{{ mariadb_user }}"
+      MARIADB_PASSWORD: "{{ vault_mariadb_user_password }}"
+
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+    networks:
+      - centralis-net
+
+volumes:
+  mariadb_data:
+
+networks:
+  centralis-net:
+    name: centralis-net

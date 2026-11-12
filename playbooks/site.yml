@@ -7,3 +7,11 @@
   roles:
     - common
     - docker
+
+
+- name: Déploiement de la base de données MariaDB
+  hosts: application
+  become: true
+
+  roles:
+    - database

@@ -1,0 +1,5 @@
+---
+mariadb_database: centralis_db
+mariadb_user: oumar_sow
+mariadb_container_name: sae502-mariadb
+mariadb_image: mariadb:11.4
