@@ -1,0 +1,8 @@
+---
+- name: Préparation commune des serveurs
+  hosts: all
+  become: true
+  gather_facts: true
+
+  roles:
+    - common
