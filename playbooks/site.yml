@@ -9,9 +9,10 @@
     - docker
 
 
-- name: Déploiement de la base de données MariaDB
+- name: Déploiement de l'application Centralis
   hosts: application
   become: true
 
   roles:
     - database
+    - webapp

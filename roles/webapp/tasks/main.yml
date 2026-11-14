@@ -1,0 +1,55 @@
+---
+- name: Créer le dossier de déploiement Flask
+  ansible.builtin.file:
+    path: /opt/sae502/webapp
+    state: directory
+    mode: "0755"
+
+- name: Copier les fichiers de l'application Flask
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../app/"
+    dest: /opt/sae502/webapp/
+    mode: preserve
+    directory_mode: "0755"
+  register: flask_files
+
+- name: Générer le Docker Compose de Flask
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: /opt/sae502/webapp/docker-compose.yml
+    mode: "0600"
+  register: flask_compose_file
+
+- name: Vérifier si l'image Flask existe
+  ansible.builtin.command:
+    cmd: docker image inspect {{ flask_image }}
+  register: flask_image_check
+  changed_when: false
+  failed_when: false
+
+- name: Construire l'image Flask
+  ansible.builtin.command:
+    cmd: docker compose -f /opt/sae502/webapp/docker-compose.yml build
+  when: flask_files.changed or flask_image_check.rc != 0
+
+- name: Démarrer Flask avec Docker Compose
+  ansible.builtin.command:
+    cmd: docker compose -f /opt/sae502/webapp/docker-compose.yml up -d
+  register: flask_compose
+  changed_when: >
+    'Created' in (flask_compose.stdout + flask_compose.stderr) or
+    'Started' in (flask_compose.stdout + flask_compose.stderr) or
+    'Recreated' in (flask_compose.stdout + flask_compose.stderr)
+
+- name: Vérifier que le conteneur Flask fonctionne
+  ansible.builtin.command:
+    cmd: docker ps --filter name={{ flask_container_name }} --filter status=running --quiet
+  register: flask_running
+  changed_when: false
+  failed_when: flask_running.stdout == ""
+
+- name: Vérifier la page web Flask
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ flask_port }}"
+    status_code: 200
+  register: flask_http
